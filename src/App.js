@@ -36,7 +36,26 @@ class App extends Component {
       box: {},
       route: 'signin',
       isSignedIn: false,
+      user: {
+        id: '123',
+        name: 'John',
+        email: '',
+        entries: 0,
+        joined: ''
+      }
     }
+  }
+
+  loadUser = (data) => {
+    this.setState({
+      user: {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        entries: data.entries,
+        joined: data.joined
+      }
+    });
   }
 
   calculateFaceLocation = (data) => {
@@ -65,11 +84,32 @@ class App extends Component {
   onButtonSubmit = () => {
       this.setState({imageUrl: this.state.input});
       app.models.predict("a403429f2ddf4b49b307e318f00e528b", this.state.input)
-      .then(response => this.displayFaceBox(this.calculateFaceLocation(response)))
-      .catch(error => console.log(error));
-      }
-  
-  onRouteChange = (route) => {
+      .then(response => {
+        console.log("Current state:", this.state);
+        if(response) {
+          fetch('http://localhost:3001/image', {
+            method: 'put',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              id: this.state.user.id
+            })
+          })
+          .then(response => response.json())
+          .then(count => {
+            this.setState({
+              user: {
+                ...this.state.user,
+                entries: count
+              }
+            })
+          })
+        }
+      return this.displayFaceBox(this.calculateFaceLocation(response));
+      })
+      .catch(error => console.log(error))
+    }
+
+    onRouteChange = (route) => {
     this.setState({ route: route });
     if(route === 'home') {
       this.setState({ isSignedIn: true })
@@ -90,7 +130,7 @@ class App extends Component {
         { route === 'home'
           ? <React.Fragment>
               <Logo />
-              <Rank />
+              <Rank count={this.state.user.entries} name={this.state.user.name} />
               <ImageLinkForm 
                 onInputChange={this.onInputChange} 
                 onButtonSubmit={this.onButtonSubmit}
@@ -99,8 +139,8 @@ class App extends Component {
             </React.Fragment>
           : (
             route === 'signin'
-            ? <SignIn onRouteChange = {this.onRouteChange} />
-            : <Register onRouteChange = {this.onRouteChange} />
+            ? <SignIn loadUser = { this.loadUser } onRouteChange = {this.onRouteChange} />
+            : <Register loadUser = { this.loadUser } onRouteChange = {this.onRouteChange} />
             )
         }
               
