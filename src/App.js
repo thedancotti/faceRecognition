@@ -10,11 +10,6 @@ import './App.css';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
 
-
-const app = new Clarifai.App({
-  apiKey: '1f049835a58948eeb19e3081432f0195',
-});
-
 const particlesOptions = {
   particles: {
    number: {
@@ -87,7 +82,15 @@ class App extends Component {
 
   onButtonSubmit = () => {
       this.setState({imageUrl: this.state.input});
-      app.models.predict("a403429f2ddf4b49b307e318f00e528b", this.state.input)
+     
+      fetch('http://localhost:3001/imageUrl', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          input: this.state.input
+        })
+      })
+      .then(response => response.json())
       .then(response => {
         console.log("Current state:", this.state);
         if(response) {
