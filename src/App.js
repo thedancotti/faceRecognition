@@ -27,23 +27,27 @@ const particlesOptions = {
   }
 }
 
-class App extends Component {
-  constructor() {
-    super();
-    this.state = {
+const initialState = {
       input: '',
       imageUrl: '',
       box: {},
-      route: 'signin',
-      isSignedIn: false,
       user: {
-        id: '123',
-        name: 'John',
+        id: '',
+        name: '',
         email: '',
         entries: 0,
         joined: ''
       }
-    }
+    };
+
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      ...initialState,
+      route: 'signin',
+      isSignedIn: false,
+    };
   }
 
   loadUser = (data) => {
@@ -103,6 +107,7 @@ class App extends Component {
               }
             })
           })
+          .catch(console.log)
         }
       return this.displayFaceBox(this.calculateFaceLocation(response));
       })
@@ -115,9 +120,14 @@ class App extends Component {
       this.setState({ isSignedIn: true })
     }
     else {
-      this.setState({ isSignedIn: false })
+      this.setState({
+        ...initialState,
+        isSignedIn: false
+      });
     }
-  }
+      
+    }
+
 
   render() {
 
